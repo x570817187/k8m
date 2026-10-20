@@ -173,7 +173,13 @@ func (c *chatService) RunOneRound(ctx context.Context, chat string, writer io.Wr
 
 			// 发送数据给客户端
 			// 写入outBuffer
+			if len(response.Choices) == 0 {
+				continue
+			}
 			content := response.Choices[0].Delta.Content
+			if content == "" {
+				continue
+			}
 			respBuffer = append(respBuffer, content)
 
 			_, _ = writer.Write([]byte(content))
