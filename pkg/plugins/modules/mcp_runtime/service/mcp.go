@@ -12,6 +12,7 @@ import (
 	"github.com/sashabaranov/go-openai"
 	"github.com/weibaohui/k8m/internal/dao"
 	"github.com/weibaohui/k8m/pkg/comm/utils/amis"
+	"github.com/weibaohui/k8m/pkg/flag"
 	uModels "github.com/weibaohui/k8m/pkg/models"
 	"github.com/weibaohui/k8m/pkg/plugins/modules/mcp_runtime/models"
 
@@ -170,14 +171,22 @@ func (m *mcpService) GetUserByMCPKey(mcpKey string) (string, error) {
 		return "", errors.New("username is empty")
 	}
 
-	// 检测用户是否被禁用
+	// 检测用户是否存在且未被禁用
 	user := &uModels.User{}
 	disabled, err := user.IsDisabled(item.Username)
 	if err != nil {
-		return "", err
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			// 环境变量定义的临时管理员不在 users 表中，直接放行
+			cfg := flag.Init()
+			if cfg.EnableTempAdmin && item.Username == cfg.AdminUserName {
+				return item.Username, nil
+			}
+			return "", fmt.Errorf("MCP Key 绑定的用户[%s]不存在", item.Username)
+		}
+		return "", fmt.Errorf("查询用户[%s]状态失败: %v", item.Username, err)
 	}
 	if disabled {
-		return "", fmt.Errorf("用户[%s]被禁用", item.Username)
+		return "", fmt.Errorf("用户[%s]已被禁用", item.Username)
 	}
 	return item.Username, nil
 }
