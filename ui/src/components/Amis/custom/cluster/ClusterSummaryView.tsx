@@ -80,7 +80,7 @@ const ClusterSummaryView = React.forwardRef<HTMLSpanElement, ClusterSummaryViewP
     const [resourceGroups, setResourceGroups] = useState<Record<string, ResourceCount[]>>({});
     const [refreshInterval, setRefreshInterval] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(false);
-    const intervalRef = React.useRef<NodeJS.Timeout | null>(null);
+    const intervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
 
     // 数据获取函数
     const fetchAll = async () => {
