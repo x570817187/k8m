@@ -261,7 +261,7 @@ const SSELogDisplayComponent = React.forwardRef((props: SSEComponentProps, _) =>
 
     // Auto Summary
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        let interval: ReturnType<typeof setInterval>;
         if (aiEnabled) {
             // Immediate trigger when enabled
             triggerSummary();
