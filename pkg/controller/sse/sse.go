@@ -106,8 +106,15 @@ func WriteWebSocketChatCompletionStream(c *response.Context, stream *openai.Chat
 		}
 
 		// 发送数据给客户端
+		if len(response.Choices) == 0 {
+			continue
+		}
+		content := response.Choices[0].Delta.Content
+		if content == "" {
+			continue
+		}
 		conn.WriteJSON(map[string]interface{}{
-			"data": string(response.Choices[0].Delta.Content),
+			"data": string(content),
 		})
 	}
 
@@ -136,7 +143,14 @@ func WriteSSEChatCompletionStream(c *response.Context, stream *openai.ChatComple
 			continue
 		}
 		// 发送 SSE 消息
-		c.SSEvent("message", response.Choices[0].Delta.Content)
+		if len(response.Choices) == 0 {
+			continue
+		}
+		content := response.Choices[0].Delta.Content
+		if content == "" {
+			continue
+		}
+		c.SSEvent("message", content)
 		// 刷新输出缓冲区
 		c.Flush()
 	}
