@@ -5,6 +5,7 @@ ARG MODEL
 ARG API_KEY
 ARG API_URL
 WORKDIR /app
+ENV GOPROXY=https://goproxy.cn,direct
 COPY go.mod go.sum /app/
 RUN go mod download
 COPY . /app
@@ -14,7 +15,7 @@ FROM alpine:latest
 
 WORKDIR /app
 COPY --from=builder /app/k8m /app/k8m
-RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories \
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories \
     && apk upgrade && apk add --no-cache curl bash inotify-tools alpine-conf busybox-extras tzdata aws-cli ca-certificates helm tar gzip\
     && apk del alpine-conf && rm -rf /var/cache/* && chmod +x k8m
 ADD reload.sh /app/reload.sh
