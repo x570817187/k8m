@@ -5,7 +5,7 @@ BINARY_NAME=k8m
 OUTPUT_DIR=bin
 
 # 定义构建工具，默认使用 podman
-BUILD_TOOL ?= podman
+BUILD_TOOL ?= docker
 
 # 定义版本信息，默认值为 v1.0.0，可以通过命令行覆盖
 # 例如 make build-all VERSION=v0.0.1
@@ -73,8 +73,8 @@ dev-frontend: ## 启动前端开发服务器
 .PHONY: build-frontend
 build-frontend: ## 构建前端静态文件
 	@echo "构建前端..."
-	@cd ui && npm install --silent
-	@cd ui && npm run build
+	@cd ui && pnpm install --ignore-scripts
+	@cd ui && pnpm build
 
 
 .PHONY: prepare-embed
@@ -124,14 +124,15 @@ install-tools: ## 安装开发工具
 .PHONY: docker
 docker: ## 构建 Docker 镜像
 	@echo "使用 $(BUILD_TOOL) 构建镜像..."
+##  --platform=linux/arm64,linux/amd64
 	@$(BUILD_TOOL) buildx build \
            --build-arg VERSION=$(VERSION) \
            --build-arg GIT_COMMIT=$(GIT_COMMIT) \
            --build-arg GitTag=$(GIT_TAG) \
            --build-arg GitRepo=$(GIT_REPOSITORY) \
            --build-arg BuildDate=$(BUILD_DATE) \
-     	   --platform=linux/arm64,linux/amd64,linux/ppc64le,linux/s390x,linux/riscv64 \
-     	   -t weibh/k8m:$(VERSION) -f Dockerfile . --load
+     	   --platform=linux/amd64 \
+           -t dockerhub.kubekey.local:7443/kubesphere/k8m:$(VERSION) -f Dockerfile . --load
 
 # 为当前平台构建可执行文件
 .PHONY: build
